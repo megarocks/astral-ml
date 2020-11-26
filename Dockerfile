@@ -5,9 +5,10 @@ RUN pip install transformers && \
 
 WORKDIR /app
 
-COPY requirements.txt generate_transformers.py ./
-
+COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
+
+COPY generate_transformers.py generate_transformers.py
 
 CMD ["python", \
     "generate_transformers.py", \
@@ -17,5 +18,6 @@ CMD ["python", \
     "--p=0.95", \
     "--length=100", \
     "--no_cuda", \
-    "--prompt='Мы становимся свидетелями того, как космические корабли бороздят большой театр'" \
+    "--request_id=1", \
+    "--prompt=Мы становимся свидетелями того, как космические корабли бороздят большой театр" \
 ]
