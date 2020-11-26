@@ -17,6 +17,8 @@
 """ Conditional text generation with the auto-regressive models of the library (GPT/GPT-2/CTRL/Transformer-XL/XLNet)
 """
 import os
+import json
+import logging
 
 import argparse
 import logging
@@ -39,6 +41,12 @@ from transformers import (
     XLNetTokenizer,
 )
 
+# Disable TensorFlow errors:
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+logging.getLogger('tensorflow').disabled = True
+logging.getLogger('transformers.configuration_utils').disabled = True
+logging.getLogger('transformers.modeling_utils').disabled = True
+logging.getLogger('transformers.tokenization_utils').disabled = True
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s", datefmt="%m/%d/%Y %H:%M:%S", level=logging.INFO,
@@ -186,6 +194,7 @@ def main():
     parser.add_argument("--seed", type=int, default=42, help="random seed for initialization")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
     parser.add_argument("--num_return_sequences", type=int, default=1, help="The number of samples to generate.")
+    parser.add_argument("--request_id", type=str, default="local", help="Prefix which will be used for model response")
     args = parser.parse_args()
 
     args.device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
@@ -256,7 +265,14 @@ def main():
 
             generated_sequences.append(total_sequence)
             # os.system('clear')
-            print(total_sequence)
+
+            result = {
+                "request_id": args.request_id,
+                "response": total_sequence
+            }
+
+            json_string = json.dumps(result, ensure_ascii=False).encode('utf8')
+            print(json_string.decode())
         prompt_text = ""
         if args.prompt:
             break
