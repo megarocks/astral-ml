@@ -19,9 +19,9 @@
 import os
 import json
 import logging
+import requests
 
 import argparse
-import logging
 
 import numpy as np
 import torch
@@ -194,7 +194,7 @@ def main():
     parser.add_argument("--seed", type=int, default=42, help="random seed for initialization")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
     parser.add_argument("--num_return_sequences", type=int, default=1, help="The number of samples to generate.")
-    parser.add_argument("--request_id", type=str, default="local", help="Prefix which will be used for model response")
+    parser.add_argument("--postback_url", type=str, default="", help="GPT response will be sent to this url")
     args = parser.parse_args()
 
     args.device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
@@ -267,12 +267,18 @@ def main():
             # os.system('clear')
 
             result = {
-                "request_id": args.request_id,
+                "prompt": prompt_text,
                 "response": total_sequence
             }
 
             json_string = json.dumps(result, ensure_ascii=False).encode('utf8')
             print(json_string.decode())
+
+            if len(args.postback_url) > 0:
+                print("posting results to: ", args.postback_url)
+                postback_response = requests.post(args.postback_url, json=result)
+                print("postback status code: ", postback_response.status_code)
+
         prompt_text = ""
         if args.prompt:
             break
